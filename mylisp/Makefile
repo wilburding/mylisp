@@ -16,8 +16,6 @@ CC = clang++
 CXX = clang++
 LD = clang++
 
-BOOST_ROOT = 
-
 ifeq ($(USE_CPP11), 1)
 	CPP_STD_FLAG = -std=c++11
 	CPP_STD_LIB_FLAG = -stdlib=libc++
