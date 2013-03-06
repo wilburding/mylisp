@@ -12,6 +12,8 @@ static const SymbolID INVALID_SYMBOL_ID = static_cast<SymbolID>(-1);
 class Symbol: public Object
 {
 public:
+    static bool is_symbol(Object* obj);
+public:
     explicit Symbol(const char* value);
 
     virtual std::string to_string() const;

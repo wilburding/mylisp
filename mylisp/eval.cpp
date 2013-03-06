@@ -32,7 +32,8 @@ DECLARE_SYMBOL(SYMBOL_BEGIN)
 DECLARE_SYMBOL(SYMBOL_COND)
 DECLARE_SYMBOL(SYMBOL_SET)
 
-bool init()
+
+static bool init()
 {
     Symbols& symbols = Symbols::instance();
 
@@ -66,23 +67,31 @@ Object* Symbol::eval(Environment* env)
 }
 
 
-bool is_if_expr(ListObject* expr)
+static bool is_if_expr(ListObject* expr)
 {
-    return static_cast<Symbol*>(expr->value())->id() == SYMBOL_IF;
+    return static_cast<Symbol*>(expr->car())->id() == SYMBOL_IF;
 }
 
 
-Object* eval_if(ListObject* expr, Environment* env)
+static Object* eval_if(ListObject* expr, Environment* env)
 {
     if(expr->length() <= 2 || expr->length() > 4)
     {
-        set_exception(new Exception("bad if expr!"));
+        set_exception(new Exception("bad if expr!" + expr->to_string()));
         return nullptr;
     }
 
-    Object* predict_expr = expr->next()->value();
-    Object* consequence_expr = expr->next()->next()->value();
-    Object* alternative_expr = expr->next()->next()->next()? expr->next()->next()->next(): nullptr;
+    Object *predict_expr = nullptr, 
+           *consequence_expr = nullptr, 
+           *alternative_expr = nullptr;
+
+    ListObject* cdr = try_list_cdr(expr);
+    predict_expr = cdr->car();
+    ListObject* cddr = try_list_cdr(cdr);
+    consequence_expr = cddr->car();
+    ListObject* cdddr = try_list_cdr(cddr);
+    if(cdddr)
+        alternative_expr = cdddr->car();
 
     Object* predict_value = predict_expr->eval(env);
     if(predict_value)
@@ -111,14 +120,81 @@ Object* eval_if(ListObject* expr, Environment* env)
 }
 
 
+static bool is_quoted_expr(ListObject* expr)
+{
+    return static_cast<Symbol*>(expr->car())->id() == SYMBOL_QUOTE;
+}
+
+
+static Object* eval_quoted(ListObject* expr, Environment* env)
+{
+    if(expr->length() != 2)
+    {
+        set_exception(new Exception("bad quoted expr!" + expr->to_string()));
+        return nullptr;
+    }
+    return expr->cdr();
+}
+
+
+static bool is_assignment_expr(ListObject* expr)
+{
+    return static_cast<Symbol*>(expr->car())->id() == SYMBOL_SET;
+}
+
+
+static bool eval_assignment(ListObject* expr, Environment* env)
+{
+    if(expr->length() != 3)
+    {
+        set_exception(new Exception("bad assignment expr!" + expr->to_string()));
+        return nullptr;
+    }
+    ListObject* cdr = try_list_cdr(expr);
+    Object* cadr = cdr->car();
+    if(!Symbol::is_symbol(cadr))
+    {
+        set_exception(new Exception("bad assignment expr! cadr must be a variable name! " + \
+                    expr->to_string()));
+        return nullptr;
+    }
+    Object* caddr = try_list_cdr(cdr)->car();
+    Object* value = caddr->eval(env);
+    if(!value)
+    {
+        return nullptr;
+    }
+    Symbol* variable = static_cast<Symbol*>(cadr);
+    if(!env->set_variable(variable->name(), value))
+    {
+        return nullptr;
+    }
+    return null_list();
+}
+
+
+
 Object* ListObject::eval(Environment* env)
 {
-    if(typeid(*this->value()) == typeid(Symbol))
+    // only compound expr
+    int len = this->length();
+    // a valid list (not a pair)?
+    if(len == -1)
     {
-        if(is_if_expr(this))
+        return nullptr;
+    }
+
+    if(Symbol::is_symbol(this->car()))
+    {
+        if(is_quoted_expr(this))
+        {
+            return eval_quoted(this, env);
+        }
+        else if(is_if_expr(this))
         {
             return eval_if(this, env);
         }
     }
     return nullptr;
 }
+

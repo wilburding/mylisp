@@ -21,10 +21,16 @@
 #include <sstream>
 
 
-ListObject::ListObject(Object* value)
+bool ListObject::is_list(const Object* obj)
+{
+    return typeid(*obj) == typeid(ListObject);
+}
+
+
+ListObject::ListObject(Object* car, Object* cdr)
     :Object(),
-    value_(value),
-    next_(nullptr)
+    car_(car),
+    cdr_(cdr)
 {
 }
 
@@ -34,47 +40,86 @@ std::string ListObject::to_string() const
     std::stringstream ss;
     ss << "(";
     const ListObject* p = this;
-    while(p && p->value_)
+    while(p)
     {
-        ss << p->value_->to_string() << " ";
-        p = p->next_;
+        if(p->car())
+        {
+            ss << p->car()->to_string() << " ";
+            if(p->cdr())
+            {
+                if(is_list(p->cdr()))
+                {
+                    p = static_cast<const ListObject*>(p->cdr());
+                }
+                else
+                {
+                    ss << ". " << p->cdr()->to_string();
+                }
+            }
+            else
+            {
+                p = nullptr;
+            }
+        }
+        else
+        {
+            p = nullptr;
+        }
     }
     ss << ")";
     return ss.str();
 }
 
 
-bool ListObject::set_next(Object* obj)
-{
-    if(empty())
-    {
-        set_exception(new Exception("empty list!"));
-        return false;
-    }
-    else
-    {
-        next_ = new ListObject(obj);
-        return true;
-    }
-}
-
-
-size_t ListObject::length() const
+int ListObject::length() const
 {
     const ListObject* cur = this;
     size_t len = 0;
-    while(cur->value())
+
+    if(this->car())
     {
         ++len;
-        cur = cur->next();
     }
+
+    while(cur->cdr())
+    {
+        if(is_list(cur->cdr()))
+        {
+            ++len;
+            cur = static_cast<const ListObject*>(cur->cdr());
+        }
+        else
+        {
+            set_exception(new Exception("bad list"));
+            return -1;
+        }
+    }
+
     return len;
 }
 
 
 ListObject* pair(Object* car, Object* cdr)
 {
-    ListObject* list = new ListObject(car);
-    list->set_next(cdr);
-    return list;
+    return new ListObject(car, cdr);
+}
+
+
+ListObject* null_list()
+{
+    return new ListObject(nullptr);
+}
+
+
+ListObject* try_list_cdr(ListObject* l)
+{
+    if(!l->cdr())
+    {
+        return nullptr;
+    }
+    if(!ListObject::is_list(l->cdr()))
+    {
+        return nullptr;
+    }
+    return static_cast<ListObject*>(l->cdr());
 }

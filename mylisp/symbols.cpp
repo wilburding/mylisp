@@ -22,6 +22,12 @@
 #include <stdlib.h>
 
 
+bool Symbol::is_symbol(Object* obj)
+{
+    return typeid(*obj) == typeid(Symbol);
+}
+
+
 Symbol::Symbol(const char* value)
     :Object(),
     id_(Symbols::instance().add_symbol(value))
