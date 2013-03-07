@@ -30,17 +30,23 @@ std::string Object::repr() const
 }
 
 
+bool BoolObject::is_bool(const Object* obj)
+{
+    return typeid(*obj) == typeid(BoolObject);
+}
+
+
 BoolObject::BoolObject(bool value)
     :Object(),
     value_(value)
 {}
 
 
-bool is_true(Object* obj)
+bool is_true(const Object* obj)
 {
-    if(obj->type_name() == "bool")
+    if(BoolObject::is_bool(obj))
     {
-        return static_cast<BoolObject*>(obj)->value();
+        return static_cast<const BoolObject*>(obj)->value();
     }
     else
     {

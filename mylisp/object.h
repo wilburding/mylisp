@@ -25,6 +25,8 @@ public:
 class BoolObject: public Object
 {
 public:
+    static bool is_bool(const Object* obj);
+public:
     explicit BoolObject(bool value = false);
 
     virtual std::string type_name() const override { return {"bool"}; }
@@ -39,7 +41,7 @@ private:
 };
 
 
-bool is_true(Object* obj);
+bool is_true(const Object* obj);
 
 
 class IntObject: public Object

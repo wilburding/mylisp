@@ -2,3 +2,7 @@
 *.d
 
 bin/mylisp
+
+test/gtest_main.a
+
+test/object_unittest
