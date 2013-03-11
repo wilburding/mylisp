@@ -32,7 +32,7 @@ CXXFLAGS += -g -Wall -Wextra -std=c++11 -stdlib=libc++
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = object_unittest
+TESTS = object_unittest list_unittest
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -77,9 +77,22 @@ gtest_main.a : gtest-all.o gtest_main.o
 object.o : $(USER_DIR)/object.cpp $(USER_DIR)/object.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/object.cpp
 
+exception.o : $(USER_DIR)/exception.cpp $(USER_DIR)/exception.h $(USER_DIR)/object.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/exception.cpp
+
 object_unittest.o : object_unittest.cpp \
 	$(USER_DIR)/object.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c object_unittest.cpp
 
 object_unittest : object.o object_unittest.o gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+list.o : $(USER_DIR)/list.cpp $(USER_DIR)/list.h $(USER_DIR)/object.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/list.cpp
+
+list_unittest.o : list_unittest.cpp \
+	$(USER_DIR)/list.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c list_unittest.cpp
+
+list_unittest : list.o object.o exception.o list_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
