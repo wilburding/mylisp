@@ -25,43 +25,43 @@ Environment::Environment(Environment* outer)
 }
 
 
-Object* Environment::look_up_variable(const char* name)
+Object* Environment::look_up_variable(SymbolID id)
 {
-    return const_cast<Object*>(static_cast<const Environment*>(this)->look_up_variable(name));
+    return const_cast<Object*>(static_cast<const Environment*>(this)->look_up_variable(id));
 }
 
 
-const Object* Environment::look_up_variable(const char* name) const
+const Object* Environment::look_up_variable(SymbolID id) const
 {
     const Environment* cur = this;
     while(cur)
     {
-        auto value = cur->get(name);
+        auto value = cur->get(id);
         if(value)
         {
             return value;
         }
         else
         {
-            cur = this->outer_;
+            cur = cur->outer_;
         }
     }
     return nullptr;
 }
 
 
-void Environment::define_variable(const char* name, Object* value)
+void Environment::define_variable(SymbolID id, Object* value)
 {
-    this->set(name, value);
+    this->set(id, value);
 }
 
 
-bool Environment::set_variable(const char* name, Object* value)
+bool Environment::set_variable(SymbolID id, Object* value)
 {
     Environment* cur = this;
     while(cur)
     {
-        auto result = cur->bindings_.find(name);
+        auto result = cur->bindings_.find(id);
         if(result != cur->bindings_.end())
         {
             result->second = value;
@@ -69,22 +69,22 @@ bool Environment::set_variable(const char* name, Object* value)
         }
         else
         {
-            cur = this->outer_;
+            cur = cur->outer_;
         }
     }
     return false;
 }
 
 
-Object* Environment::get(const char* name)
+Object* Environment::get(SymbolID id)
 {
-    return const_cast<Object*>(const_cast<Environment*>(this)->get(name));
+    return const_cast<Object*>(static_cast<const Environment*>(this)->get(id));
 }
 
 
-const Object* Environment::get(const char* name) const
+const Object* Environment::get(SymbolID id) const
 {
-    auto result = bindings_.find(name);
+    auto result = bindings_.find(id);
     if(result == bindings_.end())
     {
         return nullptr;
@@ -96,7 +96,7 @@ const Object* Environment::get(const char* name) const
 }
 
 
-void Environment::set(const char* name, Object* value)
+void Environment::set(SymbolID id, Object* value)
 {
-    bindings_.emplace(name, value);
+    bindings_.emplace(id, value);
 }

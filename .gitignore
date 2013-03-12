@@ -8,3 +8,5 @@ test/gtest_main.a
 test/object_unittest
 
 test/list_unittest
+
+test/environment_unittest

@@ -71,7 +71,7 @@ public:
 };
 
 
-TEST_F(ListTest, SmokingTest)
+TEST_F(ListTest, smoking_test)
 {
     EXPECT_EQ(3, list_->length());
     EXPECT_TRUE(list_->car() == obj1_);

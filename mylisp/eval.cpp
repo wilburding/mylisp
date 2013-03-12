@@ -58,7 +58,7 @@ Object* eval(Object* obj, Environment* env)
 
 Object* Symbol::eval(Environment* env)
 {
-    auto result = env->look_up_variable(this->name());
+    auto result = env->look_up_variable(this->id());
     if(!result)
     {
         set_exception(new Exception("could not resolve symbol " + this->to_string()));
@@ -165,7 +165,7 @@ static bool eval_assignment(ListObject* expr, Environment* env)
         return nullptr;
     }
     Symbol* variable = static_cast<Symbol*>(cadr);
-    if(!env->set_variable(variable->name(), value))
+    if(!env->set_variable(variable->id(), value))
     {
         return nullptr;
     }

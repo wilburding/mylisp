@@ -2,27 +2,32 @@
 #define ENVIRONMENT_H
 
 #include <unordered_map>
+#include <boost/utility.hpp>
 
 
 class Object;
+typedef size_t SymbolID;
 
 
-class Environment
+class Environment: private boost::noncopyable
 {
 public:
     explicit Environment(Environment* outer);
 
-    Object* look_up_variable(const char* name);
-    const Object* look_up_variable(const char* name) const;
-    void define_variable(const char* name, Object* value);
-    bool set_variable(const char* name, Object* value);
+    Object* look_up_variable(SymbolID id);
+    const Object* look_up_variable(SymbolID id) const;
+    void define_variable(SymbolID id, Object* value);
+    bool set_variable(SymbolID id, Object* value);
 
-    Object* get(const char* name);
-    const Object* get(const char* name) const;
-    void set(const char* name, Object* value);
+    Object* get(SymbolID id);
+    const Object* get(SymbolID id) const;
+    void set(SymbolID id, Object* value);
 
+    const Environment* outer() const { return outer_; }
+    Environment* outer() { return outer_; }
+    void set_outer(Environment* outer) { outer_ = outer; }
 private:
-    typedef std::unordered_map<const char*, Object*> Bindings;
+    typedef std::unordered_map<SymbolID, Object*> Bindings;
     Bindings bindings_;
 
     Environment* outer_;

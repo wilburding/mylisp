@@ -17,22 +17,21 @@ CXX = clang++
 LD = clang++
 
 ifeq ($(USE_CPP11), 1)
-	CPP_STD_FLAG = -std=c++11
-	CPP_STD_LIB_FLAG = -stdlib=libc++
+	CXX_STD_FLAG = -std=c++11
+	CXX_STD_LIB_FLAG = -stdlib=libc++
 else
-	CPP_STD_FLAG = 
-	CPP_STD_LIB_FLAG = 
+	CXX_STD_FLAG = 
+	CXX_STD_LIB_FLAG = 
 endif
 
-CCFLAGS := -pipe -g -Wall $(CCFLAGS)
-CPPFLAGS := $(CPP_STD_FLAG) $(CPP_STD_LIB_FLAG) $(CCFLAGS) -I$(BOOST_HOME)
-#CXXFLAGS := $(CPPFLAGS)
-LDFLAGS := $(CPP_STD_FLAG) $(CPP_STD_LIB_FLAG) $(LD_FLAGS) -L$(BOOST_HOME)/stage/lib
+CFLAGS := -pipe -g -Wall $(CFLAGS)
+CXXFLAGS := $(CFLAGS) 
+CPPFLAGS := $(CXX_STD_FLAG) $(CXX_STD_LIB_FLAG) -I$(BOOST_HOME)
+LDFLAGS := $(LD_FLAGS) -L$(BOOST_HOME)/stage/lib
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJECTS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJECTS)
 
 %.d: %.cpp
 	@set -e; rm -f $@; \
@@ -42,11 +41,8 @@ $(TARGET): $(OBJECTS)
 
 include $(SOURCES:.cpp=.d)
 
-#%.o: %.cpp
-	#$(CC) $(CPPFLAGS) -o $@ $<
-
 run:
 	./$(TARGET)
 
 clean:
-	-@rm *.o *.d $(TARGET)
+	-@rm *.o *.d *.d.* $(TARGET)
