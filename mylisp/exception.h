@@ -29,4 +29,4 @@ void set_exception(Exception* exception);
 Exception* get_exception();
 inline bool exception_occured() { return get_exception(); }
 
-#endif
+#endif  // EXCEPTION_H

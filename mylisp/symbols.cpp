@@ -17,8 +17,8 @@
  */
 
 #include "symbols.h"
-#include "environment.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 
@@ -28,11 +28,18 @@ bool Symbol::is_symbol(Object* obj)
 }
 
 
-Symbol::Symbol(const char* value)
+Symbol::Symbol(const char* name, Symbols* symbols)
     :Object(),
-    id_(Symbols::instance().add_symbol(value))
-{
-}
+    id_(symbols->add(name)),
+    owner_(symbols)
+{}
+
+
+Symbol::Symbol(SymbolID id, Symbols* symbols)
+    :Object(),
+    id_(id),
+    owner_(symbols)
+{}
 
 
 std::string Symbol::to_string() const
@@ -43,14 +50,7 @@ std::string Symbol::to_string() const
 
 const char* Symbol::name() const
 {
-    return Symbols::instance().get(id_);    
-}
-
-
-Symbols& Symbols::instance()
-{
-    static Symbols symbols;
-    return symbols;
+    return owner_->get(id_);    
 }
 
 
@@ -63,7 +63,7 @@ Symbols::~Symbols()
 }
 
 
-SymbolID Symbols::add_symbol(const char* symbol)
+SymbolID Symbols::add(const char* symbol)
 {
     auto result = symbol_map_.find(symbol);
     if(result != symbol_map_.end())
@@ -75,13 +75,14 @@ SymbolID Symbols::add_symbol(const char* symbol)
         char* str = strdup(symbol);
 
         symbol_strs_.push_back(str);
-        symbol_map_.emplace(str, symbol_strs_.size() - 1);
+        symbol_map_[str] = symbol_strs_.size() - 1;
+        assert(symbol_map_.find(symbol) != symbol_map_.end());
         return symbol_strs_.size() - 1;
     }
 }
 
 
-SymbolID Symbols::find_symbol(const char* symbol)
+SymbolID Symbols::find(const char* symbol) const
 {
     auto result = symbol_map_.find(symbol);
     if(result != symbol_map_.end())

@@ -33,4 +33,4 @@ private:
     Environment* outer_;
 };
 
-#endif
+#endif  // ENVIRONMENT_H

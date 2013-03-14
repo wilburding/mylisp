@@ -2,11 +2,18 @@
 #define SYMBOLS_H
 
 #include "object.h"
+#include "util.h"
+
 #include <unordered_map>
 #include <vector>
+#include <boost/noncopyable.hpp>
+
 
 typedef size_t SymbolID;
 static const SymbolID INVALID_SYMBOL_ID = static_cast<SymbolID>(-1);
+
+
+class Symbols;
 
 
 class Symbol: public Object
@@ -14,7 +21,8 @@ class Symbol: public Object
 public:
     static bool is_symbol(Object* obj);
 public:
-    explicit Symbol(const char* value);
+    Symbol(const char* name, Symbols* symbols);
+    Symbol(SymbolID id, Symbols* symbols);
 
     virtual std::string to_string() const;
     virtual std::string type_name() const { return "symbol"; }
@@ -28,30 +36,27 @@ public:
     bool equal(const Symbol& rhs) const { return id_ == rhs.id_; }
 private:
     SymbolID id_;
+    Symbols* owner_;
 };
 
 
-class Symbols
+class Symbols: private boost::noncopyable
 {
 public:
-    static Symbols& instance();
-public:
-    SymbolID add_symbol(const char* symbol);
+    Symbols() = default;
+    ~Symbols();
 
-    SymbolID find_symbol(const char* symbol);
+    SymbolID add(const char* symbol);
+
+    SymbolID find(const char* symbol) const;
 
     const char* get(SymbolID id) const;
 private:
-    Symbols() = default;
-    ~Symbols();
-    Symbols& operator=(const Symbols&) = delete;
-    Symbols(const Symbols&) = delete;
-
     typedef std::vector<char*> SymbolStrs;
-    typedef std::unordered_map<const char*, size_t> SymbolMap;
+    typedef std::unordered_map<const char*, SymbolID, CStrHash, CStrEqualTo> SymbolMap;
 
     SymbolStrs symbol_strs_;
     SymbolMap symbol_map_;
 };
 
-#endif
+#endif  // OBJECT_H

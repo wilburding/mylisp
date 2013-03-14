@@ -80,4 +80,4 @@ private:
 };
 
 
-#endif
+#endif  // OBJECT_H

@@ -17,11 +17,11 @@
  */
 
 #include "mylisp.h"
-#include "list.h"
 
 
 #define DECLARE_SYMBOL(name) static SymbolID name = INVALID_SYMBOL_ID;
-#define DEFINE_SYMBOL(name, value) name = symbols.add_symbol(#value);
+#define DEFINE_SYMBOL(name, value) name = symbols.add(#value);
+
 
 DECLARE_SYMBOL(SYMBOL_QUOTE)
 DECLARE_SYMBOL(SYMBOL_DEFINE)
@@ -33,10 +33,11 @@ DECLARE_SYMBOL(SYMBOL_COND)
 DECLARE_SYMBOL(SYMBOL_SET)
 
 
-static bool init()
-{
-    Symbols& symbols = Symbols::instance();
+static Symbols symbols;
 
+
+bool init()
+{
     DEFINE_SYMBOL(SYMBOL_QUOTE, quote)
     DEFINE_SYMBOL(SYMBOL_DEFINE, define)
     DEFINE_SYMBOL(SYMBOL_IF, if)
@@ -108,7 +109,7 @@ static Object* eval_if(ListObject* expr, Environment* env)
             }
             else
             {
-                return new BoolObject(false);
+                return null_list();
             }
         }
     }

@@ -5,5 +5,7 @@
 #include "symbols.h"
 #include "environment.h"
 #include "exception.h"
+#include "list.h"
+#include "eval.h"
 
-#endif
+#endif  // MY_LISP_H

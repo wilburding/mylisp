@@ -10,3 +10,5 @@ test/object_unittest
 test/list_unittest
 
 test/environment_unittest
+
+test/symbols_unittest
