@@ -12,3 +12,5 @@ test/list_unittest
 test/environment_unittest
 
 test/symbols_unittest
+
+test/eval_unittest

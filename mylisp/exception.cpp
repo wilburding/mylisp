@@ -18,13 +18,16 @@
 #include "exception.h"
 #include "assert.h"
 
+#include "stdio.h"
 
-static Exception* current_exception;
+
+static Exception* current_exception = nullptr;
 
 
 void set_exception(Exception* exception)
 {
-    assert(!current_exception);
+    if(exception)
+        assert(current_exception == nullptr);
 
     current_exception = exception;
 }

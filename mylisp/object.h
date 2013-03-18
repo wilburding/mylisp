@@ -2,6 +2,7 @@
 #define OBJECT_H
 
 #include <string>
+#include <assert.h>
 
 #include <boost/utility.hpp>
 

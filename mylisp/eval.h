@@ -20,9 +20,13 @@
 
 class Object;
 class Environment;
+class Symbol;
 
 
-bool init();
+bool eval_init();
+void eval_fini();
+
+Symbol* make_symbol(const char* name);
 
 Object* eval(Object* obj, Environment* env);
 

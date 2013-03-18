@@ -27,6 +27,12 @@ bool ListObject::is_list(const Object* obj)
 }
 
 
+bool ListObject::is_null_list(const Object* obj)
+{
+    return is_list(obj) && static_cast<const ListObject*>(obj)->empty();
+}
+
+
 ListObject::ListObject(Object* car, Object* cdr)
     :Object(),
     car_(car),

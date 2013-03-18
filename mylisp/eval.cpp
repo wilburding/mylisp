@@ -20,7 +20,7 @@
 
 
 #define DECLARE_SYMBOL(name) static SymbolID name = INVALID_SYMBOL_ID;
-#define DEFINE_SYMBOL(name, value) name = symbols.add(#value);
+#define DEFINE_SYMBOL(name, value) name = g_pSymbols->add(#value);
 
 
 DECLARE_SYMBOL(SYMBOL_QUOTE)
@@ -33,11 +33,13 @@ DECLARE_SYMBOL(SYMBOL_COND)
 DECLARE_SYMBOL(SYMBOL_SET)
 
 
-static Symbols symbols;
+static Symbols* g_pSymbols;
 
 
-bool init()
+bool eval_init()
 {
+    g_pSymbols = new Symbols;
+
     DEFINE_SYMBOL(SYMBOL_QUOTE, quote)
     DEFINE_SYMBOL(SYMBOL_DEFINE, define)
     DEFINE_SYMBOL(SYMBOL_IF, if)
@@ -48,6 +50,19 @@ bool init()
     DEFINE_SYMBOL(SYMBOL_SET, set!)
 
     return true;
+}
+
+
+void eval_fini()
+{
+    delete g_pSymbols;
+}
+
+
+Symbol* make_symbol(const char* name)
+{
+    assert(g_pSymbols != nullptr);
+    return new Symbol(name, g_pSymbols);
 }
 
 
@@ -127,14 +142,14 @@ static bool is_quoted_expr(ListObject* expr)
 }
 
 
-static Object* eval_quoted(ListObject* expr, Environment* env)
+static Object* eval_quoted(ListObject* expr, Environment*)
 {
     if(expr->length() != 2)
     {
         set_exception(new Exception("bad quoted expr!" + expr->to_string()));
         return nullptr;
     }
-    return expr->cdr();
+    return try_list_cdr(expr)->car();
 }
 
 
@@ -144,13 +159,14 @@ static bool is_assignment_expr(ListObject* expr)
 }
 
 
-static bool eval_assignment(ListObject* expr, Environment* env)
+static Object* eval_assignment(ListObject* expr, Environment* env)
 {
     if(expr->length() != 3)
     {
         set_exception(new Exception("bad assignment expr!" + expr->to_string()));
         return nullptr;
     }
+
     ListObject* cdr = try_list_cdr(expr);
     Object* cadr = cdr->car();
     if(!Symbol::is_symbol(cadr))
@@ -159,18 +175,24 @@ static bool eval_assignment(ListObject* expr, Environment* env)
                     expr->to_string()));
         return nullptr;
     }
+
     Object* caddr = try_list_cdr(cdr)->car();
     Object* value = caddr->eval(env);
+
     if(!value)
     {
         return nullptr;
     }
+
     Symbol* variable = static_cast<Symbol*>(cadr);
     if(!env->set_variable(variable->id(), value))
     {
         return nullptr;
     }
-    return null_list();
+    else
+    {
+        return null_list();
+    }
 }
 
 
@@ -194,6 +216,14 @@ Object* ListObject::eval(Environment* env)
         else if(is_if_expr(this))
         {
             return eval_if(this, env);
+        }
+        else if(is_assignment_expr(this))
+        {
+            return eval_assignment(this, env);
+        }
+        else
+        {
+            assert(false);
         }
     }
     return nullptr;

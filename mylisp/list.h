@@ -8,6 +8,7 @@ class ListObject: public Object
 {
 public:
     static bool is_list(const Object*);
+    static bool is_null_list(const Object*);
 public:
     explicit ListObject(Object* car, Object* cdr = nullptr);
 
