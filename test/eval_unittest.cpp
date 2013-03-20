@@ -225,7 +225,34 @@ public:
 };
 
 
-TEST_F(AssignmentTest, test_too_short)
+TEST_F(AssignmentTest, unbound_variable_should_error)
+{
+    std::unique_ptr<Symbol> variable_name(make_symbol("a"));
+    ObjectPtr value(new BoolObject);
+
+    ListPtr expr(list(assignment_sym_.get(), variable_name.get(), value.get()));
+    ObjectPtr result(eval(expr.get(), &env_));
+    EXPECT_EQ(nullptr, result.get());
+    /*EXPECT_EQ(value.get(), env_.look_up_variable(variable_name->id()));*/
+    EXPECT_TRUE(startswith(get_exception()->message().c_str(), "bad assignment expr! unbound variable! "));
+}
+
+
+TEST_F(AssignmentTest, smoking_test)
+{
+    std::unique_ptr<Symbol> variable_name(make_symbol("a"));
+    ObjectPtr old_value(new BoolObject);
+    ObjectPtr new_value(new BoolObject);
+    env_.define_variable(variable_name->id(), old_value.get());
+
+    ListPtr expr(list(assignment_sym_.get(), variable_name.get(), new_value.get()));
+    ObjectPtr result(eval(expr.get(), &env_));
+    EXPECT_EQ(new_value.get(), env_.look_up_variable(variable_name->id()));
+    EXPECT_TRUE(ListObject::is_null_list(result.get()));
+}
+
+
+TEST_F(AssignmentTest, test_too_short_should_error)
 {
     ObjectPtr dumb_value(new BoolObject());
     ListPtr expr(list(assignment_sym_.get(), dumb_value.get()));
@@ -234,7 +261,7 @@ TEST_F(AssignmentTest, test_too_short)
 }
 
 
-TEST_F(AssignmentTest, test_too_long)
+TEST_F(AssignmentTest, test_too_long_should_error)
 {
     ObjectPtr dumb_value1(new BoolObject());
     ObjectPtr dumb_value2(new BoolObject());
@@ -247,5 +274,34 @@ TEST_F(AssignmentTest, test_too_long)
 
 TEST_F(AssignmentTest, test_bad_variable_name)
 {
+    ObjectPtr dumb_value1(new BoolObject());
+    ObjectPtr dumb_value2(new BoolObject());
+    ListPtr expr(list(assignment_sym_.get(), dumb_value1.get(), dumb_value2.get()));
+    EXPECT_EQ(nullptr, eval(expr.get(), &env_));
+    EXPECT_TRUE(startswith(get_exception()->message().c_str(), "bad assignment expr! cadr must be a variable name! "));
+}
 
+
+class DefinitionTest: public EvalTest
+{
+public:
+    virtual void SetUp() override
+    {
+        EvalTest::SetUp();
+        definition_sym_.reset(make_symbol("define")); 
+    } 
+
+    ObjectPtr definition_sym_;
+};
+
+
+TEST_F(DefinitionTest, smoking_teste)
+{
+    std::unique_ptr<Symbol> variable_name(make_symbol("a"));
+    ObjectPtr value(new BoolObject);
+
+    ListPtr expr(list(definition_sym_.get(), variable_name.get(), value.get()));
+    ObjectPtr result(eval(expr.get(), &env_));
+    EXPECT_TRUE(ListObject::is_null_list(result.get()));
+    EXPECT_EQ(value.get(), env_.get(variable_name->id()));
 }
