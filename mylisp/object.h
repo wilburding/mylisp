@@ -32,7 +32,7 @@ public:
 
     virtual std::string type_name() const override { return {"bool"}; }
 
-    virtual std::string to_string() const { return std::to_string(value_); }
+    virtual std::string to_string() const { return value_? "#t": "#f"; }
 
     virtual Object* eval(Environment* ) override { return this; }
 
@@ -70,7 +70,7 @@ public:
 
     virtual std::string type_name() const override { return {"string"}; }
 
-    virtual std::string to_string() const { return value_; }
+    virtual std::string to_string() const { return "\"" + value_ + "\""; }
 
     virtual Object* eval(Environment* ) override { return this; }
 

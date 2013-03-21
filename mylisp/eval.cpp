@@ -236,6 +236,18 @@ static Object* eval_definition(ListObject* expr, Environment* env)
 }
 
 
+Object* Lambda::eval(Environment* env)
+{
+    return new Procedure(this, env);
+}
+
+
+Object* Procedure::eval(Environment* env)
+{
+    return nullptr;
+}
+
+
 Object* ListObject::eval(Environment* env)
 {
     // only compound expr

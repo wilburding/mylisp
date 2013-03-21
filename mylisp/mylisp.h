@@ -7,5 +7,6 @@
 #include "exception.h"
 #include "list.h"
 #include "eval.h"
+#include "lambda.h"
 
 #endif  // MY_LISP_H

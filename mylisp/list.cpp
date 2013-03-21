@@ -21,15 +21,24 @@
 #include <sstream>
 
 
+bool ListObject::is_pair(const Object* obj)
+{
+    return typeid(*obj) == typeid(ListObject) &&
+        static_cast<const ListObject*>(obj)->car() != nullptr;
+}
+
+
 bool ListObject::is_list(const Object* obj)
 {
-    return typeid(*obj) == typeid(ListObject);
+    return typeid(*obj) == typeid(ListObject) &&
+        static_cast<const ListObject*>(obj)->proper();
 }
 
 
 bool ListObject::is_null_list(const Object* obj)
 {
-    return is_list(obj) && static_cast<const ListObject*>(obj)->empty();
+    return typeid(*obj) == typeid(ListObject) &&
+        static_cast<const ListObject*>(obj)->empty();
 }
 
 
@@ -77,19 +86,39 @@ std::string ListObject::to_string() const
 }
 
 
+bool ListObject::proper() const
+{
+    const ListObject* cur = this;
+    while(cur->cdr())
+    {
+        if(typeid(*cur->cdr()) == typeid(ListObject))
+        {
+            cur = static_cast<const ListObject*>(cur->cdr());
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 int ListObject::length() const
 {
     const ListObject* cur = this;
     size_t len = 0;
 
-    if(this->car())
+    if(this->empty())
     {
-        ++len;
+        return 0;
     }
+
+    // ends with a null list
 
     while(cur->cdr())
     {
-        if(is_list(cur->cdr()))
+        if(typeid(*cur->cdr()) == typeid(ListObject))
         {
             ++len;
             cur = static_cast<const ListObject*>(cur->cdr());
@@ -123,7 +152,7 @@ ListObject* try_list_cdr(ListObject* l)
     {
         return nullptr;
     }
-    if(!ListObject::is_list(l->cdr()))
+    if(typeid(*l->cdr()) != typeid(ListObject))
     {
         return nullptr;
     }

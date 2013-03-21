@@ -86,6 +86,6 @@ TEST_F(ListTest, smoking_test)
     ListObject* cddr = try_list_cdr(cdr);
     EXPECT_EQ(1, cddr->length());
     EXPECT_TRUE(cddr->car() == obj3_);
-    EXPECT_TRUE(cddr->cdr() == nullptr);
+    EXPECT_TRUE(ListObject::is_null_list(cddr->cdr()));
     EXPECT_EQ("(" + obj3_->to_string() + " )", cddr->to_string());
 }

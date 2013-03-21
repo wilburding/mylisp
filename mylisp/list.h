@@ -4,9 +4,16 @@
 #include "object.h"
 
 
+/*
+ * null list is a ListObject with both cdr and car are nullptr 
+ * otherwise neither should be nullptr
+ */
+
+
 class ListObject: public Object
 {
 public:
+    static bool is_pair(const Object*);
     static bool is_list(const Object*);
     static bool is_null_list(const Object*);
 public:
@@ -26,10 +33,14 @@ public:
     IMPLEMENT_ACCESSORS(cdr)
 
 #undef IMPLEMENT_ACCESSORS
+    // use only when you know its good!
+    ListObject* list_cdr() { return static_cast<ListObject*>(cdr_); }
+    const ListObject* list_cdr() const { return static_cast<ListObject*>(cdr_); }
 
+    bool proper() const;  // ends with nil
+    bool improper() const { return !proper(); }
     int length() const;
-
-    bool empty() const { return  car_ == nullptr; }
+    bool empty() const { return car_ == nullptr; }
 private:
     Object* car_;
     Object* cdr_;
@@ -37,11 +48,12 @@ private:
 
 
 ListObject* pair(Object* car, Object* cdr);
+ListObject* null_list();
 
 
 inline ListObject* list(Object* car)
 {
-    return new ListObject(car);
+    return new ListObject(car, null_list());
 }
 
 template<typename... Targs>
@@ -49,9 +61,6 @@ ListObject* list(Object* car, Targs...fargs)
 {
     return new ListObject(car, list(fargs...));
 }
-
-
-ListObject* null_list();
 
 
 // try to treat cdr as a list head

@@ -32,11 +32,13 @@ CXXFLAGS += -g -Wall -Wextra -std=c++11 -stdlib=libc++
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = object_unittest\
-		list_unittest\
-		environment_unittest\
-		symbols_unittest\
-		eval_unittest
+TESTS = all_unittest \
+		object_unittest \
+		list_unittest \
+		environment_unittest \
+		symbols_unittest \
+		eval_unittest \
+		lambda_unittest \
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -95,8 +97,11 @@ symbols.o : $(USER_DIR)/symbols.cpp $(USER_DIR)/symbols.h $(USER_DIR)/util.h $(G
 
 eval.o : $(USER_DIR)/eval.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
 	$(USER_DIR)/symbols.h $(USER_DIR)/object.h $(USER_DIR)/list.h $(USER_DIR)/exception.h \
-	$(USER_DIR)/environment.h $(GTEST_HEADERS)
+	$(USER_DIR)/environment.h $(USER_DIR)/lambda.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/eval.cpp
+
+lambda.o : $(USER_DIR)/lambda.cpp $(USER_DIR)/lambda.h $(USER_DIR)/list.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/lambda.cpp
 
 
 object_unittest.o : object_unittest.cpp \
@@ -112,12 +117,17 @@ environment_unittest.o : environment_unittest.cpp \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c environment_unittest.cpp
 
 symbols_unittest.o : symbols_unittest.cpp \
-	$(USER_DIR)/symbols.h $(GTEST_HEADERS)
+	$(USER_DIR)/symbols.h $(USER_DIR)/object.h $(USER_DIR)/util.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c symbols_unittest.cpp
 
-eval_unittest.o : eval_unittest.cpp \
-	$(USER_DIR)/eval.h $(GTEST_HEADERS)
+eval_unittest.o : eval_unittest.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
+	$(USER_DIR)/symbols.h $(USER_DIR)/object.h $(USER_DIR)/list.h $(USER_DIR)/exception.h \
+	$(USER_DIR)/environment.h $(USER_DIR)/lambda.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c eval_unittest.cpp
+
+lambda_unittest.o : lambda_unittest.cpp \
+	$(USER_DIR)/lambda.h $(USER_DIR)/object.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c lambda_unittest.cpp
 
 
 object_unittest : object.o object_unittest.o gtest_main.a
@@ -132,5 +142,14 @@ environment_unittest : environment.o object.o environment_unittest.o gtest_main.
 symbols_unittest : symbols.o object.o symbols_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-eval_unittest: eval_unittest.o eval.o symbols.o object.o list.o exception.o environment.o gtest_main.a
+eval_unittest: eval_unittest.o eval.o symbols.o object.o list.o \
+	exception.o environment.o lambda.o gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+lambda_unittest : lambda.o object.o lambda_unittest.o gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+all_unittest: environment.o environment_unittest.o eval.o eval_unittest.o \
+	exception.o lambda.o lambda_unittest.o list.o list_unittest.o \
+	object.o object_unittest.o symbols.o symbols_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

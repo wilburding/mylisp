@@ -7,6 +7,7 @@ SOURCES = object.cpp \
 		  eval.cpp \
 		  exception.cpp \
 		  list.cpp \
+		  lambda.cpp \
 
 TARGET = ../bin/mylisp
 
