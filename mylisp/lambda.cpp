@@ -17,6 +17,9 @@
  */
 #include "lambda.h"
 #include "list.h"
+#include "environment.h"
+
+#include <typeinfo>
 
 
 bool Lambda::is_lambda(const Object* obj)
@@ -40,6 +43,12 @@ std::string Lambda::to_string() const
 }
 
 
+Object* Lambda::eval(Environment* env)
+{
+    return new Procedure(this, env);
+}
+
+
 bool Procedure::is_procedure(const Object* obj)
 {
     return typeid(*obj) == typeid(Procedure);
@@ -58,4 +67,10 @@ std::string Procedure::to_string() const
     char buf[256] = {0};
     std::snprintf(buf, sizeof(buf), "procedure#%p ", static_cast<const void*>(this));
     return std::string(buf) + this->parameters()->to_string();
+}
+
+
+Object* Procedure::eval(Environment* )
+{
+    return nullptr;
 }

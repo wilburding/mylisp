@@ -72,17 +72,6 @@ Object* eval(Object* obj, Environment* env)
 }
 
 
-Object* Symbol::eval(Environment* env)
-{
-    auto result = env->look_up_variable(this->id());
-    if(!result)
-    {
-        set_exception(new Exception("could not resolve symbol " + this->to_string()));
-    }
-    return result;
-}
-
-
 static bool is_if_expr(const ListObject* expr)
 {
     return static_cast<const Symbol*>(expr->car())->id() == SYMBOL_IF;
@@ -236,15 +225,26 @@ static Object* eval_definition(ListObject* expr, Environment* env)
 }
 
 
-Object* Lambda::eval(Environment* env)
+bool is_sequence_expr(const ListObject* expr)
 {
-    return new Procedure(this, env);
+    return static_cast<const Symbol*>(expr->car())->id() == SYMBOL_BEGIN;
 }
 
 
-Object* Procedure::eval(Environment* env)
+static Object* eval_sequence(ListObject* expr, Environment* env)
 {
-    return nullptr;
+    //without the begin head
+    ListObject* cur = expr;
+    Object* result = nullptr;
+    while(cur && cur->cdr())  // cdr to check nil
+    {
+        result = cur->eval(env);
+        if(!result)
+        {
+            return nullptr;
+        }
+    }
+    return result;
 }
 
 
@@ -275,6 +275,10 @@ Object* ListObject::eval(Environment* env)
         else if(is_definition_expr(this))
         {
             return eval_definition(this, env);
+        }
+        else if(is_sequence_expr(this))
+        {
+            return eval_sequence(this->cdr_as_list(), env);
         }
         else
         {

@@ -19,6 +19,7 @@
 #include "exception.h"
 
 #include <sstream>
+#include <typeinfo>
 
 
 bool ListObject::is_pair(const Object* obj)

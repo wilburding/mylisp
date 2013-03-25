@@ -21,9 +21,6 @@
 #include  <memory>
 
 
-Object* Symbol::eval(Environment* ){ return nullptr; }
-
-
 TEST(SymbolTest, test_name)
 {
     Symbols symbols;

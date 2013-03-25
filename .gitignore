@@ -16,3 +16,11 @@ test/symbols_unittest
 test/eval_unittest
 
 test/lambda_unittest
+
+cscope.files
+
+cscope.out
+
+tags
+
+test/all_unittest

@@ -18,6 +18,7 @@
 #include "exception.h"
 #include "assert.h"
 
+#include <typeinfo>
 #include "stdio.h"
 
 

@@ -17,10 +17,13 @@
  */
 #include "object.h"
 
+#include <typeinfo>
+
 
 Object::~Object()
 {
 }
+
 
 std::string Object::repr() const
 {

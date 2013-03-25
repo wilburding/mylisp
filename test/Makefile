@@ -63,8 +63,8 @@ GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
 # conservative and not optimized.  This is fine as Google Test
 # compiles fast and for ordinary users its source rarely changes.
 gtest-all.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-            $(GTEST_DIR)/src/gtest-all.cc
+	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -Wno-unused-private-field \
+		-Wno-missing-field-initializers -c $(GTEST_DIR)/src/gtest-all.cc
 
 gtest_main.o : $(GTEST_SRCS_)
 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
@@ -92,7 +92,8 @@ list.o : $(USER_DIR)/list.cpp $(USER_DIR)/list.h $(USER_DIR)/object.h $(GTEST_HE
 environment.o : $(USER_DIR)/environment.cpp $(USER_DIR)/environment.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/environment.cpp
 
-symbols.o : $(USER_DIR)/symbols.cpp $(USER_DIR)/symbols.h $(USER_DIR)/util.h $(GTEST_HEADERS)
+symbols.o : $(USER_DIR)/symbols.cpp $(USER_DIR)/symbols.h $(USER_DIR)/util.h \
+	$(USER_DIR)/environment.h $(USER_DIR)/object.h $(USER_DIR)/exception.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/symbols.cpp
 
 eval.o : $(USER_DIR)/eval.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
@@ -100,7 +101,8 @@ eval.o : $(USER_DIR)/eval.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
 	$(USER_DIR)/environment.h $(USER_DIR)/lambda.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/eval.cpp
 
-lambda.o : $(USER_DIR)/lambda.cpp $(USER_DIR)/lambda.h $(USER_DIR)/list.h $(GTEST_HEADERS)
+lambda.o : $(USER_DIR)/lambda.cpp $(USER_DIR)/lambda.h $(USER_DIR)/list.h\
+	$(USER_DIR)/environment.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/lambda.cpp
 
 
@@ -108,16 +110,18 @@ object_unittest.o : object_unittest.cpp \
 	$(USER_DIR)/object.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c object_unittest.cpp
 
-list_unittest.o : list_unittest.cpp \
-	$(USER_DIR)/list.h $(GTEST_HEADERS)
+list_unittest.o : list_unittest.cpp $(USER_DIR)/list.h $(USER_DIR)/object.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c list_unittest.cpp
+
+list_eval.o : list_eval.cpp $(USER_DIR)/list.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c list_eval.cpp
 
 environment_unittest.o : environment_unittest.cpp \
 	$(USER_DIR)/environment.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c environment_unittest.cpp
 
-symbols_unittest.o : symbols_unittest.cpp \
-	$(USER_DIR)/symbols.h $(USER_DIR)/object.h $(USER_DIR)/util.h $(GTEST_HEADERS)
+symbols_unittest.o : symbols_unittest.cpp $(USER_DIR)/symbols.h $(USER_DIR)/object.h \
+	$(USER_DIR)/util.h $(USER_DIR)/environment.h $(USER_DIR)/exception.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c symbols_unittest.cpp
 
 eval_unittest.o : eval_unittest.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
@@ -125,28 +129,28 @@ eval_unittest.o : eval_unittest.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
 	$(USER_DIR)/environment.h $(USER_DIR)/lambda.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c eval_unittest.cpp
 
-lambda_unittest.o : lambda_unittest.cpp \
-	$(USER_DIR)/lambda.h $(USER_DIR)/object.h $(GTEST_HEADERS)
+lambda_unittest.o : lambda_unittest.cpp $(USER_DIR)/lambda.h $(USER_DIR)/object.h \
+	$(USER_DIR)/environment.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c lambda_unittest.cpp
 
 
 object_unittest : object.o object_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-list_unittest : list.o object.o exception.o list_unittest.o gtest_main.a
+list_unittest : list.o object.o exception.o list_unittest.o list_eval.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 environment_unittest : environment.o object.o environment_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-symbols_unittest : symbols.o object.o symbols_unittest.o gtest_main.a
+symbols_unittest : symbols.o environment.o object.o exception.o symbols_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 eval_unittest: eval_unittest.o eval.o symbols.o object.o list.o \
 	exception.o environment.o lambda.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-lambda_unittest : lambda.o object.o lambda_unittest.o gtest_main.a
+lambda_unittest : lambda.o object.o environment.o lambda_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 all_unittest: environment.o environment_unittest.o eval.o eval_unittest.o \

@@ -1,4 +1,6 @@
-.PHONY: mylisp test clean
+.PHONY: all mylisp test clean
+
+all: mylisp test
 
 mylisp:
 	$(MAKE) -C mylisp
@@ -8,3 +10,4 @@ test:
 
 clean:
 	$(MAKE) -C mylisp clean
+	$(MAKE) -C test clean

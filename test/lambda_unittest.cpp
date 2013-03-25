@@ -19,6 +19,3 @@
 #include "lambda.h"
 
 
-Object* Lambda::eval(Environment* ) { return nullptr; }
-Object* Procedure::eval(Environment* ) { return nullptr; }
-

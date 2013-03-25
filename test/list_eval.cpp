@@ -1,28 +1,23 @@
 /*
  * =====================================================================================
  *
- *       Filename:  main.cpp
+ *       Filename:  list_eval.cpp
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  01/21/2013 22:16:59
+ *        Created:  03/25/2013 22:15:08
  *       Revision:  none
- *       Compiler:  gcc
+ *       Compiler:  clang
  *
  *         Author:  Wilbur Ding (), powerx1202@gmail.com
  *   Organization:  
  *
  * =====================================================================================
  */
+#include "list.h"
 
-#include "object.h"
 
-#define UNUSED_PARAM(param) param __attribute__ ((unused))
-// seems not supported yet
-/*#define UNUSED_PARAM(param) param [[unused]] */
+// i really want to put the real one in eval.h..
+Object* ListObject::eval(Environment* ) { return nullptr; }
 
-int main(int UNUSED_PARAM(argc), char* UNUSED_PARAM(argv[]))
-{
-    std::string s{"123"};
-}

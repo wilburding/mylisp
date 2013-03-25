@@ -20,9 +20,6 @@
 #include <memory>
 
 
-Object* ListObject::eval(Environment* ){return nullptr;}
-
-
 TEST(EmptyListTest, SmokingTest)
 {
     std::unique_ptr<ListObject> alist(null_list());

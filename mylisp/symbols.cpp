@@ -17,9 +17,12 @@
  */
 
 #include "symbols.h"
+#include "environment.h"
+#include "exception.h"
 
 #include <assert.h>
 #include <stdlib.h>
+#include <typeinfo>
 
 
 bool Symbol::is_symbol(Object* obj)
@@ -52,6 +55,19 @@ const char* Symbol::name() const
 {
     return owner_->get(id_);    
 }
+
+
+Object* Symbol::eval(Environment* env)
+{
+    auto result = env->look_up_variable(this->id());
+    if(!result)
+    {
+        set_exception(new Exception("could not resolve symbol " + this->to_string()));
+    }
+    return result;
+}
+
+
 
 
 Symbols::~Symbols()

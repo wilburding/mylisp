@@ -11,28 +11,29 @@ SOURCES = object.cpp \
 
 TARGET = ../bin/mylisp
 
-USE_CPP11 = 1
-
-CC = clang++
-CXX = clang++
-LD = clang++
-
-ifeq ($(USE_CPP11), 1)
-	CXX_STD_FLAG = -std=c++11
-	CXX_STD_LIB_FLAG = -stdlib=libc++
+ifdef USE_CLANG
+	CC = clang++
+	CXX = clang++
+	LD = clang++
 else
-	CXX_STD_FLAG = 
-	CXX_STD_LIB_FLAG = 
+	CC = g++-mp-4.8
+	CXX = g++-mp-4.8
+	LD = g++-mp-4.8
 endif
 
-CFLAGS := -pipe -g -Wall $(CFLAGS)
+CFLAGS := -pipe -g -Wall -Wextra $(CFLAGS)
 CXXFLAGS := $(CFLAGS) 
-CPPFLAGS := $(CXX_STD_FLAG) $(CXX_STD_LIB_FLAG) -I$(BOOST_HOME)
+ifdef USE_CLANG
+	CPPFLAGS := -std=c++11 -stdlib=libc++ -I$(BOOST_HOME)
+else
+	CPPFLAGS := -std=c++11 -I$(BOOST_HOME)
+endif
 LDFLAGS := $(LD_FLAGS) -L$(BOOST_HOME)/stage/lib
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJECTS)
+	$(LD) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
 
 %.d: %.cpp
 	@set -e; rm -f $@; \
@@ -46,4 +47,5 @@ run:
 	./$(TARGET)
 
 clean:
-	-@rm *.o *.d *.d.* $(TARGET)
+	-rm *.o *.d 
+	-rm $(TARGET)

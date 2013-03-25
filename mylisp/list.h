@@ -34,8 +34,8 @@ public:
 
 #undef IMPLEMENT_ACCESSORS
     // use only when you know its good!
-    ListObject* list_cdr() { return static_cast<ListObject*>(cdr_); }
-    const ListObject* list_cdr() const { return static_cast<ListObject*>(cdr_); }
+    ListObject* cdr_as_list() { return static_cast<ListObject*>(cdr_); }
+    const ListObject* cdr_as_list() const { return static_cast<ListObject*>(cdr_); }
 
     bool proper() const;  // ends with nil
     bool improper() const { return !proper(); }
