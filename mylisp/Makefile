@@ -1,13 +1,6 @@
 .PHONY: run clean
 
-SOURCES = object.cpp \
-		  main.cpp \
-		  symbols.cpp \
-		  environment.cpp \
-		  eval.cpp \
-		  exception.cpp \
-		  list.cpp \
-		  lambda.cpp \
+SOURCES = $(wildcard *.cpp)
 
 TARGET = ../bin/mylisp
 

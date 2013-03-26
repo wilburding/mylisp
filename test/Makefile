@@ -15,31 +15,32 @@
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
 GTEST_DIR = $(GTEST_ROOT)
-
-# Where to find user code.
 USER_DIR = ../mylisp
 
+# Where to find user code.
+vpath %.cpp $(USER_DIR)
+vpath %.h $(USER_DIR)
 
 CC = clang++
 CXX = clang++
 LD = clang++
 
 # Flags passed to the preprocessor.
-CPPFLAGS += -I../mylisp -I$(GTEST_DIR)/include -I$(BOOST_HOME) -DGTEST_HAS_TR1_TUPLE=0
+CPPFLAGS += -I$(USER_DIR) -I$(GTEST_DIR)/include -I$(BOOST_HOME) -DGTEST_HAS_TR1_TUPLE=0
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra -std=c++11 -stdlib=libc++
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = all_unittest \
-		object_unittest \
-		list_unittest \
-		environment_unittest \
-		symbols_unittest \
-		eval_unittest \
-		lambda_unittest \
+UNITTESTS_SRCS := $(wildcard *_unittest.cpp)
+UNITTESTS_OBJS := $(UNITTESTS_SRCS:.cpp=.o)
+UNITTESTS := $(patsubst %.o, %, $(UNITTESTS_OBJS))
+HELPERS_SRCS := list_eval.cpp
+TESTS := $(UNITTESTS) all_unittest
 
+MYLISP_SRCS := $(wildcard $(USER_DIR)/*.cpp)
+MYLISP_OBJS := $(patsubst $(USER_DIR)/%, %, $(MYLISP_SRCS:.cpp=.o))
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
@@ -50,7 +51,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 all : $(TESTS)
 
 clean :
-	rm -f $(TESTS) gtest.a gtest_main.a *.o
+	rm -f $(TESTS) gtest.a gtest_main.a *.o *.d
 
 # Builds gtest.a and gtest_main.a.
 
@@ -80,58 +81,20 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-object.o : $(USER_DIR)/object.cpp $(USER_DIR)/object.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/object.cpp
-
-exception.o : $(USER_DIR)/exception.cpp $(USER_DIR)/exception.h $(USER_DIR)/object.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/exception.cpp
-
-list.o : $(USER_DIR)/list.cpp $(USER_DIR)/list.h $(USER_DIR)/object.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/list.cpp
-
-environment.o : $(USER_DIR)/environment.cpp $(USER_DIR)/environment.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/environment.cpp
-
-symbols.o : $(USER_DIR)/symbols.cpp $(USER_DIR)/symbols.h $(USER_DIR)/util.h \
-	$(USER_DIR)/environment.h $(USER_DIR)/object.h $(USER_DIR)/exception.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/symbols.cpp
-
-eval.o : $(USER_DIR)/eval.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
-	$(USER_DIR)/symbols.h $(USER_DIR)/object.h $(USER_DIR)/list.h $(USER_DIR)/exception.h \
-	$(USER_DIR)/environment.h $(USER_DIR)/lambda.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/eval.cpp
-
-lambda.o : $(USER_DIR)/lambda.cpp $(USER_DIR)/lambda.h $(USER_DIR)/list.h\
-	$(USER_DIR)/environment.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/lambda.cpp
+#$(patsubst %.cpp, %.d, $(MYLISP_SRCS)): %.d: %.cpp
+# when .cpp file is in ../mylisp, the .d file will look like this
+# object.o :../object.cpp ../object.h
+# which is exactly what we want..
+%.d: %.cpp
+	@set -e; rm -f $@; \
+         $(CC) -MM $(CPPFLAGS) $(CXXFLAGS) $< > $@.$$$$; \
+         sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+		 rm -f $@.$$$$
 
 
-object_unittest.o : object_unittest.cpp \
-	$(USER_DIR)/object.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c object_unittest.cpp
-
-list_unittest.o : list_unittest.cpp $(USER_DIR)/list.h $(USER_DIR)/object.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c list_unittest.cpp
-
-list_eval.o : list_eval.cpp $(USER_DIR)/list.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c list_eval.cpp
-
-environment_unittest.o : environment_unittest.cpp \
-	$(USER_DIR)/environment.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c environment_unittest.cpp
-
-symbols_unittest.o : symbols_unittest.cpp $(USER_DIR)/symbols.h $(USER_DIR)/object.h \
-	$(USER_DIR)/util.h $(USER_DIR)/environment.h $(USER_DIR)/exception.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c symbols_unittest.cpp
-
-eval_unittest.o : eval_unittest.cpp $(USER_DIR)/eval.h $(USER_DIR)/mylisp.h \
-	$(USER_DIR)/symbols.h $(USER_DIR)/object.h $(USER_DIR)/list.h $(USER_DIR)/exception.h \
-	$(USER_DIR)/environment.h $(USER_DIR)/lambda.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c eval_unittest.cpp
-
-lambda_unittest.o : lambda_unittest.cpp $(USER_DIR)/lambda.h $(USER_DIR)/object.h \
-	$(USER_DIR)/environment.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c lambda_unittest.cpp
+include $(MYLISP_SRCS:.cpp=.d)
+include $(UNITTESTS_SRCS:.cpp=.d)
+include $(HELPERS_SRCS:.cpp=.d)
 
 
 object_unittest : object.o object_unittest.o gtest_main.a
@@ -140,7 +103,7 @@ object_unittest : object.o object_unittest.o gtest_main.a
 list_unittest : list.o object.o exception.o list_unittest.o list_eval.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-environment_unittest : environment.o object.o environment_unittest.o gtest_main.a
+environment_unittest : environment_unittest.o object.o environment.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 symbols_unittest : symbols.o environment.o object.o exception.o symbols_unittest.o gtest_main.a
