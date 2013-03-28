@@ -295,7 +295,7 @@ public:
 };
 
 
-TEST_F(DefinitionTest, smoking_teste)
+TEST_F(DefinitionTest, smoking_test)
 {
     std::unique_ptr<Symbol> variable_name(make_symbol("a"));
     ObjectPtr value(new BoolObject);
@@ -304,4 +304,28 @@ TEST_F(DefinitionTest, smoking_teste)
     ObjectPtr result(eval(expr.get(), &env_));
     EXPECT_TRUE(ListObject::is_null_list(result.get()));
     EXPECT_EQ(value.get(), env_.get(variable_name->id()));
+}
+
+
+class BeginSequenceTest: public EvalTest
+{
+public:
+    virtual void SetUp() override
+    {
+        EvalTest::SetUp();
+        begin_sym_.reset(make_symbol("begin"));
+    }
+
+    ObjectPtr begin_sym_;
+};
+
+
+TEST_F(BeginSequenceTest, smoking_test)
+{
+    ObjectPtr value1(new BoolObject);
+    ObjectPtr value2(new BoolObject);
+
+    ListPtr expr(list(begin_sym_.get(), value1.get(), value2.get()));
+    ObjectPtr result(eval(expr.get(), nullptr));
+    EXPECT_EQ(value2.get(), result.get());
 }

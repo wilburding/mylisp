@@ -236,13 +236,14 @@ static Object* eval_sequence(ListObject* expr, Environment* env)
     //without the begin head
     ListObject* cur = expr;
     Object* result = nullptr;
-    while(cur && cur->cdr())  // cdr to check nil
+    while(cur && !cur->empty())  // cdr to check nil
     {
-        result = cur->eval(env);
+        result = cur->car()->eval(env);
         if(!result)
         {
             return nullptr;
         }
+        cur = cur->cdr_as_list();
     }
     return result;
 }

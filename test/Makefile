@@ -30,13 +30,14 @@ CPPFLAGS += -I$(USER_DIR) -I$(GTEST_DIR)/include -I$(BOOST_HOME) -DGTEST_HAS_TR1
 
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra -std=c++11 -stdlib=libc++
+LDFLAGS := -lpthread $(LDFLAGS)
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 UNITTESTS_SRCS := $(wildcard *_unittest.cpp)
 UNITTESTS_OBJS := $(UNITTESTS_SRCS:.cpp=.o)
 UNITTESTS := $(patsubst %.o, %, $(UNITTESTS_OBJS))
-HELPERS_SRCS := list_eval.cpp
+HELPERS_SRCS := list_eval.cpp debug_helper.cpp
 TESTS := $(UNITTESTS) all_unittest
 
 MYLISP_SRCS := $(wildcard $(USER_DIR)/*.cpp)
@@ -97,26 +98,29 @@ include $(UNITTESTS_SRCS:.cpp=.d)
 include $(HELPERS_SRCS:.cpp=.d)
 
 
-object_unittest : object.o object_unittest.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+COMMON_UT_DEPS := object.o debug.o debug_helper.o gtest_main.a
 
-list_unittest : list.o object.o exception.o list_unittest.o list_eval.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-environment_unittest : environment_unittest.o object.o environment.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+object_unittest : object_unittest.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
-symbols_unittest : symbols.o environment.o object.o exception.o symbols_unittest.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+list_unittest : list.o exception.o list_unittest.o list_eval.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
-eval_unittest: eval_unittest.o eval.o symbols.o object.o list.o \
-	exception.o environment.o lambda.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+environment_unittest : environment_unittest.o environment.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS)$^ -o $@
 
-lambda_unittest : lambda.o object.o environment.o lambda_unittest.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+symbols_unittest : symbols.o environment.o exception.o symbols_unittest.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS)$^ -o $@
+
+eval_unittest: eval_unittest.o eval.o symbols.o list.o \
+	exception.o environment.o lambda.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS)$^ -o $@
+
+lambda_unittest : lambda.o environment.o lambda_unittest.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS)$^ -o $@
 
 all_unittest: environment.o environment_unittest.o eval.o eval_unittest.o \
 	exception.o lambda.o lambda_unittest.o list.o list_unittest.o \
-	object.o object_unittest.o symbols.o symbols_unittest.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+	object_unittest.o symbols.o symbols_unittest.o $(COMMON_UT_DEPS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@

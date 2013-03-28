@@ -21,12 +21,12 @@ ifdef USE_CLANG
 else
 	CPPFLAGS := -std=c++11 -I$(BOOST_HOME)
 endif
-LDFLAGS := $(LD_FLAGS) -L$(BOOST_HOME)/stage/lib
+LDFLAGS := $(LD_FLAGS)
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJECTS)
-	$(LD) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
+	$(LD) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 %.d: %.cpp
 	@set -e; rm -f $@; \

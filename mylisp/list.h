@@ -41,6 +41,7 @@ public:
     bool improper() const { return !proper(); }
     int length() const;
     bool empty() const { return car_ == nullptr; }
+    bool nil() const { return empty(); }
 private:
     Object* car_;
     Object* cdr_;
